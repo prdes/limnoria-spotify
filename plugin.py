@@ -44,7 +44,7 @@ except ImportError:
 
 
 class Spotify(callbacks.Plugin):
-    """Retrieve song information upon being fed an track name"""
+    """Retrieve song information using Spotify with <artist><song> as input"""
     pass
 
 
@@ -52,24 +52,35 @@ class Spotify(callbacks.Plugin):
     def sp(self, irc, msg, args, song):
         """<artist> <song>
 
-        The track name for which you need to draw out the information .
+        The track details for which you need the link.
         """
+        # define your environment variables, input you spotify creds here
         os.environ['SPOTIPY_CLIENT_ID'] = ''
         os.environ['SPOTIPY_CLIENT_SECRET'] = ''
+
         spotified = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
         results = spotified.search(song)
+
         items = results['tracks']['items']
         if len(items) > 0:
+            # if results are present
             track = items[0]
-            trackn = track['uri']
-            track_info = spotified.track(trackn)
+
+            track_uri = track['uri']
+
+            track_info = spotified.track(track_uri)
+
             track_artist = track['artists'][0]['name']
+
             track_name =track['name']
+
             track_url = track_info['external_urls']['spotify']
-            re = utils.str.format('The song is %s by %s at %s with %s', track_name, track_artist, track_url, trackn)
+            # IRC output
+            re = utils.str.format('The song is %s by %s at %s with %s', track_name, track_artist, track_url, track_uri)
             irc.reply(re)
 
         else:
+            # No results
             irc.error('Song not found')
 
     sp = wrap(sp, ['text'])
