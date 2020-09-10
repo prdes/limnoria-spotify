@@ -53,4 +53,11 @@ Spotify = conf.registerPlugin('Spotify')
 #     registry.Boolean(False, _("""Help for someConfigVariableName.""")))
 
 
+conf.registerGlobalValue(Spotify, 'clientID',
+    registry.string('', """ Sets the ClientID obtainable from https://developer.spotify.com/""", private=True))
+
+conf.registerGlobalValue(Spotify, 'clientSECRET',
+    registry.string('', """ Sets the ClientSECRET obtainable from https://developer.spotify.com/""", private=True))
+
+
 # vim:set shiftwidth=4 tabstop=4 expandtab textwidth=79:

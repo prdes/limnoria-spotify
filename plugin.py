@@ -29,6 +29,7 @@
 ###
 import spotipy
 import os
+import sys
 from spotipy.oauth2 import SpotifyClientCredentials
 
 
@@ -44,44 +45,44 @@ except ImportError:
 
 
 class Spotify(callbacks.Plugin):
-    """Retrieve song information using Spotify with <artist><song> as input"""
-    pass
-
-
+    """Retrieve Track information from Spotify using the Spotipy"""
 
     def sp(self, irc, msg, args, song):
         """<artist> <song>
 
-        The track details for which you need the link.
+        The track details for which the URL/trackID is desired.
         """
-        # define your environment variables, input you spotify creds here
-        os.environ['SPOTIPY_CLIENT_ID'] = ''
-        os.environ['SPOTIPY_CLIENT_SECRET'] = ''
+        clientID = self.registryValue('clientID')
+        if not clientID:
+            irc.error("The clientID is not set. Please set it via "
+                      "'config plugins.spotify.clientID' and reload the plugin. "
+                      "You can sign up for it from "
+                      "https://developer.spotify.com/", Raise=True)
+
+        clientSECRET = self.registryValue('clientSECRET')
+        if not clientSECRET:
+            irc.error("The clientSECRET is not set. Please set it via "
+                      "'config plugins.spotify.clientSECRET' and reload the plugin. "
+                      "You can sign up for it from "
+                      "https://developer.spotify.com/", Raise=True)
+
+        os.environ['SPOTIPY_CLIENT_ID'] = clientID
+        os.environ['SPOTIPY_CLIENT_SECRET'] = clientSECRET
 
         spotified = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
         results = spotified.search(song)
-
         items = results['tracks']['items']
         if len(items) > 0:
-            # if results are present
             track = items[0]
-
             track_uri = track['uri']
-
-            track_info = spotified.track(track_uri)
-
             track_artist = track['artists'][0]['name']
-
+            track_album = track['album']['name']
             track_name =track['name']
-
-            track_url = track_info['external_urls']['spotify']
-            # IRC output
-            re = utils.str.format('The song is %s by %s at %s with %s', track_name, track_artist, track_url, track_uri)
+            track_url = track['external_urls']['spotify']
+            re = utils.str.format(' 🎶️ \x02\x0301,03SPOTIFY\x0f 🎶️ %s by %s from %s at %s and uri %s', track_name, track_artist, track_album, track_url, track_uri)
             irc.reply(re)
-
         else:
-            # No results
-            irc.error('Song not found')
+            irc.error('No Results')
 
     sp = wrap(sp, ['text'])
 
